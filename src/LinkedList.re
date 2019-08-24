@@ -1,28 +1,43 @@
-type node('a) = {
-  value: 'a,
-  next: option(node('a)),
-};
+type linkedList('a) =
+  | Empty
+  | Node('a, linkedList('a));
 
 /**
- * Initializes a single Node with no next value
+ * Initialize an empty linked list
  */
-let init = (value: 'a) => {value, next: None};
+let init = () => Empty;
 
 /**
- * Inserts a new node at the end of the linked list
+ * Append a node to the end of the list
  */
-let rec append = (node: node('a), value: 'a) => {
-  switch (node.next) {
-  | Some(nextNode) => {...node, next: Some(append(nextNode, value))}
-  | None =>
-    let newNode = {value, next: None};
-    {...node, next: Some(newNode)};
+let rec append = (list: linkedList('a), value: 'a) => {
+  switch (list) {
+  | Empty => Node(value, Empty)
+  | Node(val_, next) => Node(val_, append(next, value))
   };
 };
 
-let x = init(4);
-let y = append(x, 6);
-let z = append(y, 9);
-let w = append(z, 24);
+/**
+ * Print all elements in a list
+ */
+// a convenience function for printing values
+let printVal = [%raw
+  {|
+  function printVal(value) {
+    console.log("Value:", value);
+  }
+|}
+];
 
-Js.log(w.next);
+let rec printList = (list: linkedList('a)) => {
+  switch (list) {
+  | Node(value, next) =>
+    printVal(value);
+    printList(next);
+  | Empty => ()
+  };
+};
+
+let list = append(append(init(), 4), 6);
+
+printList(list);
